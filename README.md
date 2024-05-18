@@ -1,5 +1,6 @@
 # matlab-latex-variables
 Automatically update values from a matlab script in a latex document
+V0.2
 
 ## Motivation
 When writing documentation of technical projects in latex, I often had to update values I got from calculations in Matlab (due to miscalculations or changed specifications). As this is boring and annoying work, I implemented these scripts/functions to be able to reference matlab variables directly in my documents so they update automatically.
@@ -42,6 +43,7 @@ Finally imported variables can be used as
 ## Planned features
 - Add a function for exporting from other numeric tools, like python's numpy etc. Should be relatively simple :)
 - Change from csv using comma as the separator to tab, allowing for more flexibility as what can be "transferred" (e.g. normal text).
+- Add scientific notation to Matlab part.
 
 If you have ideas for more features, feel free to contact me.
 There are likely better solutions (with cleaner code) out there, but I only want this to work easily.
