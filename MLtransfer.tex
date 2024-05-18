@@ -30,38 +30,53 @@
 \usepackage{forloop}
 
 \ExplSyntaxOn
+% because we want different ior variables for each instance of loadvariables{...} and ior_str_map_inline doesnt natively accept "variable" names 
+\cs_generate_variant:Nn \ior_str_map_inline:Nn { c } 
+\cs_generate_variant:Nn \ior_map_inline:Nn { c }
+
 \newcommand{\loadvariables}[2]{
 	\krishna_csv_load:nn {#1} {#2} 
-	\tl_set:Nx \l_tmpd_tl {\seq_count:c {l__krishna_ #1_seq}}
-	\newcounter{x}
-	\forloop{x}{1}{\value{x} < \int_eval:n {\l_tmpd_tl + 1}}{
-		\tl_set:Nn \l_tmptr_tl {\GetCSV{#1}{\arabic{x}}{1}}
-		\tl_set:Nn \l_tmprb_tl {\GetCSV{#1}{\arabic{x}}{2}}
-		\cs_new:cx {#1\l_tmptr_tl~:}{\l_tmprb_tl}
-		\cs_new_eq:cc {#1\l_tmptr_tl} {#1\l_tmptr_tl~:}%\krishna_csv_get:nnn
-		
-	}
+	%\tl_set:Nx \l_tmpd_tl {\seq_count:c {l__krishna_ #1_seq}}
+	%\newcounter{abc}
+	%\forloop{abc}{1}{\value{abc} < \int_eval:n {\l_tmpd_tl + 1}}{
+		%\tl_set:Nn \l_tmptr_tl {\GetCSV{#1}{\arabic{abc}}{1}}
+		%\tl_set:Nn \l_tmprb_tl {\GetCSV{#1}{\arabic{abc}}{2}}
+		%\cs_new:cx {#1\l_tmptr_tl~:}{\l_tmprb_tl}
+		%\cs_new_eq:cc {#1\l_tmptr_tl} {#1\l_tmptr_tl~:}%\krishna_csv_get:nnn
+	%}
+	%\prop_item:cn {l__krishna_ #1 _prop} {b}
 }
 % Copied from https://tex.stackexchange.com/questions/474397/populate-information-from-a-csv-file-into-a-latex-document-specifically-into-th/474404#474404
 % I dont know enough latex3 to do this myself or do it cleaner :)
-\ior_new:N \l__krishna_ior_tmpa
+%\ior_new:N \l__krishna_ior_tmpa
 \cs_new:Npn \krishna_csv_load:nn #1 #2 %#2: Dateiname, #1: Name der CSV intern
 {
 	\cs_if_free:cTF { l__krishna_ #1 _seq }
 	% guckt nach, ob \l__krishna_ #1_seq  noch nicht existiert
-	{ \__krishna_csv_load:nn { l__krishna_ #1 } {#2} } % springt immer hier hin, da immer war
+	%{ \__krishna_csv_load:nn { l__krishna_ #1 } {#2} } % springt immer hier hin, da immer war
+	{ \__krishna_csv_load:nn {#1} {#2} } % springt immer hier hin, da immer war
 	{ \msg_error:nnn { krishna / csv } { name-used } {#1} }
 }
 \cs_new:Npn \__krishna_csv_load:nn #1 #2 %#2: Dateiname
 {
-	\ior_open:Nn \l__krishna_ior_tmpa {#2}
-	\seq_new:c { #1 _seq } % l__krishna_ #1_seq, das was vorher als frei registriert wurde
-	\exp_args:Nc \__krishna_csv_read:N { #1 _seq } % fully expanded
-	\ior_close:N \l__krishna_ior_tmpa
+	\ior_new:c {l__krishna_ior_#1_tmpa} % new
+	\ior_open:cn {l__krishna_ior_#1_tmpa} {#2}
+	\seq_new:c {l__krishna_  #1 _seq } % l__krishna_ #1_seq, das was vorher als frei registriert wurde
+	\prop_new:c {l__krishna_ #1 _prop} % new
+	%\exp_args:Nc \__krishna_csv_read:N { #1 _seq } % fully expanded
+	%\ior_str_map_inline:cn {l__krishna_ior_#1_tmpa}  { \seq_put_right:cn {l__krishna_ #1_seq} {##1} }  % new
+	\ior_map_inline:cn {l__krishna_ior_#1_tmpa}  { \seq_put_right:cn {l__krishna_ #1_seq} {##1} }  % new
+	%\ior_item:Nn \l_krishna_ior_tmpa {1}
+	% preparation for putting into prop, new
+	%\seq_new:N \l__tmp_seq
+	%\clist_item:nn {}
+	\seq_map_inline:cn {l__krishna_ #1 _seq}  { \prop_put:cxx {l__krishna_ #1_prop} {\clist_item:nn {##1}{1}} {\clist_item:nn{##1}{2}} }  % new
+	
+	\ior_close:c {l__krishna_ior_#1_tmpa}
 }
 \cs_new:Npn \__krishna_csv_read:N #1
 {
-	\ior_str_map_inline:Nn \l__krishna_ior_tmpa  { \seq_put_right:Nn #1 {##1} }
+	%\ior_str_map_inline:Nn \l__krishna_ior_tmpa  { \seq_put_right:Nn #1 {##1} }
 }
 \cs_new:Npn \krishna_csv_get:nnn #1 #2 #3
 {
@@ -74,5 +89,10 @@
 { The~CSV~name~`#1'~is~already~taken }
 \cs_new_eq:NN \LoadCSV \krishna_csv_load:nn
 \cs_new_eq:NN \GetCSV \krishna_csv_get:nnn
+
+\newcommand{\mvar}[2] % #1=namespace, #2=variable
+{
+	\prop_item:cn {l__krishna_ #1 _prop} {#2}
+}
 
 \ExplSyntaxOff

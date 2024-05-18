@@ -12,7 +12,7 @@ Put the function transfer.m into a folder in the Matlab PATH so Matlab can find 
 
 In your Matlab script use
 transfer(\[file path], var1, ..., var2)
-where the variables should be numerical. Dont use variable names that are very close to latex commands, as this can cause errors later on
+where the variables can be numerical or symbolical. Symbolical (and matrices) get parsed to LaTeX format. Even plain text is possible, as long as it is not including a comma or linebreak, which would break the csv-parsing.
 
 ### Transfer file
 The file used by both parts. It is just a simple csv-file with "\[name],\[value]" in each line.
@@ -20,7 +20,7 @@ The file used by both parts. It is just a simple csv-file with "\[name],\[value]
 ### Latex part
 Put the file "MLtransfer.tex" into your latex-projects folder (or use another path in the following command).
 In a latex-file use
-\include{MLtransfer.tex}
+\input{MLtransfer.tex}
 to access it. Variables can be imported from the file they have been saved to from Matlab using
 \loadvariables{\[namespace]}{\[file path]}
 - \[namespace] is a prefix added to each variable. Can be used to have multiple variables from different files/matlab-scripts with the same name.
@@ -28,24 +28,20 @@ to access it. Variables can be imported from the file they have been saved to fr
 	- example.txt if its in the same folder
 	- /subfolder/example.txt if its in a sub folder
 	- ../../otherfolder/example.txt goes two folders back from original directory and into than into the new subfolder
-- Unlimited files can be loaded, as long as there are not the same names. This can be resolved by using different namespaces. 
+- Unlimited files can be loaded, as long as they are using different namespaces. 
 
 Finally imported variables can be used as 
-"\\\[namespace]\[var name]"
+"\\mvar{\[namespace]}{\[var name]}"
 - The var name must not include underscores or other special characters which lead to latex parsing problems. If the variable name in Matlab includes these, these characters are just deleted.
+- Don't forget to put (especially symbolical values) in a math environment like $...$
 - e.g.: 
 	- given the file test.txt with the content "bar,123"
 	- \\loadvariables{foo}{test.txt}
-	- In the text: "\foobar" gives "123"
-
-
+	- In the text: "\mvar{foo}{bar}" gives "123"
 
 ## Planned features
-- Allow for symbolic expressions from Matlab (e.g. "\frac{1}{x}") to be imported. Currently there are errors parsing it on the latex side.
-	- Same with numeric matrices. If solved on latex-side, the matlab side can be implemented like
-	[https://de.mathworks.com/matlabcentral/fileexchange/80629-matlab-matrix-to-latex-conversion-example].
-	- Currently, squiggly brackets are lost when parsing, resulting in corrupted expressions. Try it yourself :)
-- Add a function for exporting from other numeric tools, like python's numpy etc.
+- Add a function for exporting from other numeric tools, like python's numpy etc. Should be relatively simple :)
 - Change from csv using comma as the separator to tab, allowing for more flexibility as what can be "transferred" (e.g. normal text).
 
-If you have ideas for more features or how fix the symbolic parsing in latex, feel free to contact me.
+If you have ideas for more features, feel free to contact me.
+There are likely better solutions (with cleaner code) out there, but I only want this to work easily.
