@@ -1,0 +1,78 @@
+% Latex implementation of the variable transfer
+% Usage:
+% \loadvariables{<namespace>}{<file path>}
+% 	<file path> can be (tested on linux):
+%		../folder/filename.txt if in another folder (changes directory once and then goes to the folder "folder"
+%		filename.txt if in the same folder
+% 	<namespace> gives the prefix of all variables from this file
+%
+%\<namespace><var name>
+%	gives the value of the variable with <var name> from the file
+
+%example:
+%	given textfile named test.txt in same folder as this file and the main.tex:
+% a,45
+% b,6.453
+%
+%	in main.tex:
+%\documentclass[11pt,a4paper,sans]{article}
+%\include{MLtransfer.tex}
+%\loadvariables{t}{test.txt}
+%\begin{document}
+%	\tb
+%\end{document}
+%
+%	gives pdf with 6.453
+
+
+\usepackage{expl3}
+\usepackage{xparse}
+\usepackage{forloop}
+
+\ExplSyntaxOn
+\newcommand{\loadvariables}[2]{
+	\krishna_csv_load:nn {#1} {#2} 
+	\tl_set:Nx \l_tmpd_tl {\seq_count:c {l__krishna_ #1_seq}}
+	\newcounter{x}
+	\forloop{x}{1}{\value{x} < \int_eval:n {\l_tmpd_tl + 1}}{
+		\tl_set:Nn \l_tmptr_tl {\GetCSV{#1}{\arabic{x}}{1}}
+		\tl_set:Nn \l_tmprb_tl {\GetCSV{#1}{\arabic{x}}{2}}
+		\cs_new:cx {#1\l_tmptr_tl~:}{\l_tmprb_tl}
+		\cs_new_eq:cc {#1\l_tmptr_tl} {#1\l_tmptr_tl~:}%\krishna_csv_get:nnn
+		
+	}
+}
+% Copied from https://tex.stackexchange.com/questions/474397/populate-information-from-a-csv-file-into-a-latex-document-specifically-into-th/474404#474404
+% I dont know enough latex3 to do this myself or do it cleaner :)
+\ior_new:N \l__krishna_ior_tmpa
+\cs_new:Npn \krishna_csv_load:nn #1 #2 %#2: Dateiname, #1: Name der CSV intern
+{
+	\cs_if_free:cTF { l__krishna_ #1 _seq }
+	% guckt nach, ob \l__krishna_ #1_seq  noch nicht existiert
+	{ \__krishna_csv_load:nn { l__krishna_ #1 } {#2} } % springt immer hier hin, da immer war
+	{ \msg_error:nnn { krishna / csv } { name-used } {#1} }
+}
+\cs_new:Npn \__krishna_csv_load:nn #1 #2 %#2: Dateiname
+{
+	\ior_open:Nn \l__krishna_ior_tmpa {#2}
+	\seq_new:c { #1 _seq } % l__krishna_ #1_seq, das was vorher als frei registriert wurde
+	\exp_args:Nc \__krishna_csv_read:N { #1 _seq } % fully expanded
+	\ior_close:N \l__krishna_ior_tmpa
+}
+\cs_new:Npn \__krishna_csv_read:N #1
+{
+	\ior_str_map_inline:Nn \l__krishna_ior_tmpa  { \seq_put_right:Nn #1 {##1} }
+}
+\cs_new:Npn \krishna_csv_get:nnn #1 #2 #3
+{
+	\exp_args:Nf
+	\clist_item:nn % comma list
+	{ \seq_item:cn { l__krishna_ #1 _seq } {#2} } %c damit das erste Argument als command geparsed wird
+	{#3}
+}
+\msg_new:nnn { krishna / csv } { name-used }
+{ The~CSV~name~`#1'~is~already~taken }
+\cs_new_eq:NN \LoadCSV \krishna_csv_load:nn
+\cs_new_eq:NN \GetCSV \krishna_csv_get:nnn
+
+\ExplSyntaxOff
