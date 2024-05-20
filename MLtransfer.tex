@@ -33,18 +33,10 @@
 % because we want different ior variables for each instance of loadvariables{...} and ior_str_map_inline doesnt natively accept "variable" names 
 \cs_generate_variant:Nn \ior_str_map_inline:Nn { c } 
 \cs_generate_variant:Nn \ior_map_inline:Nn { c }
+\cs_generate_variant:Nn \tl_if_eq:nnTF { V }
 
 \newcommand{\loadvariables}[2]{
 	\krishna_csv_load:nn {#1} {#2} 
-	%\tl_set:Nx \l_tmpd_tl {\seq_count:c {l__krishna_ #1_seq}}
-	%\newcounter{abc}
-	%\forloop{abc}{1}{\value{abc} < \int_eval:n {\l_tmpd_tl + 1}}{
-		%\tl_set:Nn \l_tmptr_tl {\GetCSV{#1}{\arabic{abc}}{1}}
-		%\tl_set:Nn \l_tmprb_tl {\GetCSV{#1}{\arabic{abc}}{2}}
-		%\cs_new:cx {#1\l_tmptr_tl~:}{\l_tmprb_tl}
-		%\cs_new_eq:cc {#1\l_tmptr_tl} {#1\l_tmptr_tl~:}%\krishna_csv_get:nnn
-	%}
-	%\prop_item:cn {l__krishna_ #1 _prop} {b}
 }
 % Copied from https://tex.stackexchange.com/questions/474397/populate-information-from-a-csv-file-into-a-latex-document-specifically-into-th/474404#474404
 % I dont know enough latex3 to do this myself or do it cleaner :)
@@ -66,10 +58,7 @@
 	%\exp_args:Nc \__krishna_csv_read:N { #1 _seq } % fully expanded
 	%\ior_str_map_inline:cn {l__krishna_ior_#1_tmpa}  { \seq_put_right:cn {l__krishna_ #1_seq} {##1} }  % new
 	\ior_map_inline:cn {l__krishna_ior_#1_tmpa}  { \seq_put_right:cn {l__krishna_ #1_seq} {##1} }  % new
-	%\ior_item:Nn \l_krishna_ior_tmpa {1}
-	% preparation for putting into prop, new
-	%\seq_new:N \l__tmp_seq
-	%\clist_item:nn {}
+
 	\seq_map_inline:cn {l__krishna_ #1 _seq}  { \prop_put:cxx {l__krishna_ #1_prop} {\clist_item:nn {##1}{1}} {\clist_item:nn{##1}{2}} }  % new
 	
 	\ior_close:c {l__krishna_ior_#1_tmpa}
@@ -82,17 +71,20 @@
 {
 	\exp_args:Nf
 	\clist_item:nn % comma list
-	{ \seq_item:cn { l__krishna_ #1 _seq } {#2} } %c damit das erste Argument als command geparsed wird
+	{ \seq_item:cn { l__krishna_ #1 _seq } {#2} }
 	{#3}
 }
 \msg_new:nnn { krishna / csv } { name-used }
 { The~CSV~name~`#1'~is~already~taken }
-\cs_new_eq:NN \LoadCSV \krishna_csv_load:nn
-\cs_new_eq:NN \GetCSV \krishna_csv_get:nnn
 
 \newcommand{\mvar}[2] % #1=namespace, #2=variable
 {
 	\prop_item:cn {l__krishna_ #1 _prop} {#2}
 }
-
+% Logic function: if value is 1 do true part, otherwise true
+\newcommand{\mvaristrue}[4]  %#1=namespace, #2=variablename, #3=text if true, #4=text if false
+{
+	\int_set:Nn \l_tmpa_int {\int_eval:n {\prop_item:cn {l__krishna_ #1_prop}{#2}}}
+	\int_compare:nNnTF {\l_tmpa_int} = {1} {#3} {#4}
+}
 \ExplSyntaxOff

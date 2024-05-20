@@ -39,11 +39,17 @@ function [path] = transfer(varargin)
                 
                 val = s;
             end
+        elseif isa(in,"logical")
+            if in
+                val = "1";
+            else
+                val = "0";
+            end
         else
             val = string(varargin{i});
         end
         %nam = erase(inputname(i),"_")
-        nam = inputname(i)
+        nam = inputname(i);
         % i'd rather have it with \t than , but cant get it to work in latex
         fprintf(fileID,'%s,%s\n',nam,val);
         %inputname(i)
