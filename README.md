@@ -16,7 +16,7 @@ where the variables can be numerical or symbolical. Symbolical (and matrices) ge
 Boolean variables are converted into `1` (true) or `0` (false).
 
 ### Transfer file
-The file used by both parts. It is just a simple csv-file with `[name],[value]"` in each line.
+The file used by both parts. It is just a simple csv-file with `[name],[value]` in each line.
 
 ### Latex part
 Put the file `MLtransfer.tex` into your latex-projects folder (or use another path in the following command).
