@@ -1,6 +1,8 @@
 # matlab-latex-variables
 Automatically update values from a matlab script in a latex document
 
+This project has been discontinued in favor of [mvar](https://github.com/ma4096/mvar) which also implements Python as input and Typst as output as well as other quality of life improvements. This repository still works just fine for its simle purpose. 
+
 ## Motivation
 When writing documentation of technical projects in latex, I often had to update values I got from calculations in Matlab (due to miscalculations or changed specifications). As this is boring and annoying work, I implemented these scripts/functions to be able to reference matlab variables directly in my documents so they update automatically.
 
